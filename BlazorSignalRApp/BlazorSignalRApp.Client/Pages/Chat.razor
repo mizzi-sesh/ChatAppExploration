@@ -1,7 +1,9 @@
 @page "/chat"
 @rendermode InteractiveWebAssembly
 @using Microsoft.AspNetCore.SignalR.Client
+@using System.Reflection.Metadata
 @inject NavigationManager Navigation
+@inject ILogger<Chat> Logger
 @implements IAsyncDisposable
 
 <PageTitle>Chat</PageTitle>
@@ -30,32 +32,47 @@
 </ul>
 
 @code {
+
     private HubConnection? hubConnection;
     private List<string> messages = [];
-    private string? userInput;
+    private string? userInput; 
     private string? messageInput;
 
     protected override async Task OnInitializedAsync()
     {
+
         hubConnection = new HubConnectionBuilder()
             .WithUrl(Navigation.ToAbsoluteUri("/chathub"))
+            .ConfigureLogging(logging => {
+                logging.AddDebug();
+                logging.SetMinimumLevel(LogLevel.Debug);
+            })
             .Build();
 
         hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
         {
+            Logger.LogInformation($"Received message from {user}: {message}");
             var encodedMsg = $"{user}: {message}";
             messages.Add(encodedMsg);
             InvokeAsync(StateHasChanged);
         });
 
+        hubConnection.On<string, List<string>>("LoadMessages", (connectionId, receivedMessagesFromClient) => {
+
+            messages = receivedMessagesFromClient;
+            InvokeAsync(StateHasChanged);
+        });
+
         await hubConnection.StartAsync();
+        await hubConnection.SendAsync("InitialiseMessageHistory", hubConnection.ConnectionId);
     }
 
     private async Task Send()
     {
         if (hubConnection is not null)
-        {
+        {         
             await hubConnection.SendAsync("SendMessage", userInput, messageInput);
+            messages.Add($"{userInput}: {messageInput}");
         }
     }
 
