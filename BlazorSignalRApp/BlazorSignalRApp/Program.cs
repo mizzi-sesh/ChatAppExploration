@@ -5,10 +5,17 @@ using BlazorSignalRApp.Hubs;
 using BlazorSignalRApp;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
+
+
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
+
+
 
 builder.Services.AddRazorPages();
 builder.Services.AddDbContext<AppDBContext>(options =>
@@ -16,17 +23,18 @@ builder.Services.AddDbContext<AppDBContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("AppDbContextSQLite"));
 });
 
+builder.Services.AddDefaultIdentity<IdentityUser>(options => 
+    options.SignIn.RequireConfirmedAccount = true)
+    .AddEntityFrameworkStores<AppDBContext>();
+
+
 builder.Services.AddDatabaseDeveloperPageExceptionFilter(); 
-
-// Add services to the container.
 builder.Services.AddSignalR();
-
 builder.Services.AddResponseCompression(opts =>
 {
     opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
         [ "application/octet-stream" ]);
 });
-
 builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
 

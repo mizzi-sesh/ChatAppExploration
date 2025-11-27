@@ -404,3 +404,6 @@ ASALocalRun/
 # Local History for Visual Studio
 .localhistory/
 BlazorSignalRApp/BlazorSignalRApp/CA.db
+BlazorSignalRApp/BlazorSignalRApp/CA.db-shm
+.gitignore
+BlazorSignalRApp/BlazorSignalRApp/CA.db-wal

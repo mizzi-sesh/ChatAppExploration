@@ -1,6 +1,8 @@
 
 
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages;
 using NuGet.Protocol.Plugins;
 
 namespace BlazorSignalRApp
@@ -28,7 +30,7 @@ namespace BlazorSignalRApp
 
   }
 
-  public class AppDBContext : DbContext
+  public class AppDBContext : IdentityDbContext
   {
 
     public AppDBContext (DbContextOptions<AppDBContext> options ) : base(options){}
@@ -36,6 +38,7 @@ namespace BlazorSignalRApp
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+      base.OnModelCreating(modelBuilder);
       modelBuilder.Entity<Message>().ToTable("Message");
     }
     
